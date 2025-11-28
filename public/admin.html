@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Create Event</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .admin-container {
+            max-width: 600px;
+            margin: 50px auto;
+        }
+
+        .result-box {
+            margin-top: 20px;
+            padding: 15px;
+            background: #2c2c2c;
+            border-radius: 8px;
+            word-break: break-all;
+        }
+
+        .result-box a {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container admin-container">
+        <header>
+            <h1>สร้างกิจกรรมแจกซอง</h1>
+        </header>
+
+        <div class="card">
+            <form id="create-event-form">
+                <div class="form-group">
+                    <label>เวลาเริ่มกิจกรรม</label>
+                    <input type="datetime-local" id="startTime" required>
+                </div>
+                <div class="form-group">
+                    <label>เวลาจบกิจกรรม</label>
+                    <input type="datetime-local" id="endTime" required>
+                </div>
+                <div class="form-group">
+                    <label>รหัสรับรางวัล</label>
+                    <input type="text" id="rewardCode" placeholder="เช่น 123456" required>
+                </div>
+                <div class="form-group">
+                    <label>ลิงก์ซองของขวัญ (TrueMoney)</label>
+                    <input type="text" id="trueMoneyUrl" placeholder="https://gift.truemoney.com/campaign/..." required>
+                </div>
+                <button type="submit" class="btn-primary">สร้างลิงก์กิจกรรม</button>
+            </form>
+
+            <div id="result" class="hidden">
+                <h3>สร้างสำเร็จ! ลิงก์กิจกรรมของคุณคือ:</h3>
+                <div class="result-box">
+                    <a id="eventLink" href="#" target="_blank"></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('create-event-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const data = {
+                startTime: document.getElementById('startTime').value,
+                endTime: document.getElementById('endTime').value,
+                rewardCode: document.getElementById('rewardCode').value,
+                trueMoneyUrl: document.getElementById('trueMoneyUrl').value
+            };
+
+            try {
+                const res = await fetch('/api/admin/create-event', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+
+                if (result.success) {
+                    const link = `${window.location.origin}${result.link}`;
+                    const linkEl = document.getElementById('eventLink');
+                    linkEl.href = link;
+                    linkEl.innerText = link;
+                    document.getElementById('result').classList.remove('hidden');
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'สร้างกิจกรรมสำเร็จ',
+                        text: 'คุณสามารถนำลิงก์ไปแจกได้เลย'
+                    });
+                } else {
+                    Swal.fire('Error', 'เกิดข้อผิดพลาด', 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                Swal.fire('Error', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์', 'error');
+            }
+        });
+    </script>
+</body>
+
+</html>

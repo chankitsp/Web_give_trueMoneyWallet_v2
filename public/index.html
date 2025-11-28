@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="th">
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MacEZ Free Money - รับซองทรูมันนี่วอเล็ท</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body>
+
+    <div class="container">
+        <header>
+            <h1>MacEZ Free Money</h1>
+            <p>แจกซองทรูมันนี่วอเล็ทฟรี!</p>
+        </header>
+
+        <div id="countdown-container" class="card">
+            <h2>เวลานับถอยหลัง</h2>
+            <div id="countdown" class="countdown-timer">00:00:00</div>
+            <p id="status-text">กำลังโหลด...</p>
+        </div>
+
+        <div id="claim-form-container" class="card hidden">
+            <h2>รับรางวัล</h2>
+            <form id="claim-form">
+                <div class="form-group">
+                    <label for="phone">เบอร์ทรูมันนี่วอเล็ท</label>
+                    <input type="tel" id="phone" name="phone" placeholder="0xxxxxxxxx" maxlength="10" required>
+                </div>
+                <div class="form-group">
+                    <label for="code">รหัสรับรางวัล</label>
+                    <input type="text" id="code" name="code" placeholder="กรอกรหัสรับรางวัล" required>
+                </div>
+                <button type="submit" class="btn-primary">รับรางวัล</button>
+            </form>
+        </div>
+
+        <div class="card history-card">
+            <h2>ประวัติคิวล่าสุด</h2>
+            <ul id="history-list">
+                <!-- History items will be added here -->
+            </ul>
+        </div>
+
+        <footer>
+            <p>&copy; 2025 MacEZ Free Money. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script src="/script.js"></script>
+</body>
+
+</html>
