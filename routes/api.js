@@ -4,12 +4,12 @@ const Event = require('../models/Event');
 const Claim = require('../models/Claim');
 const Queue = require('../models/Queue');
 const Counter = require('../models/Counter');
-const checkIp = require('../middleware/checkIp');
+
 
 // --- Admin Routes ---
 
 // Create New Event
-router.post('/admin/create-event', checkIp, async (req, res) => {
+router.post('/admin/create-event', async (req, res) => {
     const { startTime, endTime, rewardCode, trueMoneyUrl } = req.body;
     try {
         // Generate random 8-char code

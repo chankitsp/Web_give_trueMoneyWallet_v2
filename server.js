@@ -34,10 +34,10 @@ mongoose.connection.on('disconnected', () => {
 // Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
 
-const checkIp = require('./middleware/checkIp');
+
 
 // Serve Admin Page
-app.get('/admin', checkIp, (req, res) => {
+app.get('/createtw', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
