@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
 const apiRoutes = require('./routes/api');
+const twApi = require('@opecgame/twapi');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -53,12 +54,7 @@ const Queue = require('./models/Queue');
 const Claim = require('./models/Claim');
 const Event = require('./models/Event');
 
-// Mock TrueMoney API (Same as in api.js)
-const claimTrueMoney = async (phoneNumber) => {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    if (Math.random() > 0) return { success: true };
-    throw new Error('TrueMoney API Error');
-};
+
 
 let isProcessing = false;
 
@@ -80,28 +76,47 @@ const processQueue = async () => {
 
             try {
                 // Call TrueMoney API
-                // In real world, we might need event-specific config here
-                // const event = await Event.findOne({ code: nextInQueue.eventCode });
+                const event = await Event.findOne({ code: nextInQueue.eventCode });
+                if (!event || !event.trueMoneyUrl) {
+                    throw new Error('Event or TrueMoney Link not found');
+                }
 
-                await claimTrueMoney(nextInQueue.phoneNumber);
+                // Extract code from URL if needed
+                let giftCode = event.trueMoneyUrl;
+                if (giftCode.includes('v=')) {
+                    giftCode = giftCode.split('v=')[1].split('&')[0];
+                }
 
-                // Success
-                nextInQueue.status = 'completed';
-                await nextInQueue.save();
+                console.log(`Attempting to claim for ${nextInQueue.phoneNumber} with code ${giftCode}`);
 
-                // Create Claim Record
-                const newClaim = new Claim({
-                    phoneNumber: nextInQueue.phoneNumber,
-                    eventCode: nextInQueue.eventCode,
-                    amount: 10, // Mock amount
-                    status: 'success'
-                });
-                await newClaim.save();
-                console.log(`Claim SUCCESS: ${nextInQueue.phoneNumber}`);
+                const tw = await twApi(giftCode, nextInQueue.phoneNumber);
+
+                if (tw.status.code === 'SUCCESS') {
+                    // Success
+                    nextInQueue.status = 'completed';
+                    await nextInQueue.save();
+
+                    // Create Claim Record
+                    const newClaim = new Claim({
+                        phoneNumber: nextInQueue.phoneNumber,
+                        eventCode: nextInQueue.eventCode,
+                        amount: tw.data.my_ticket.amount_baht || 0, // Use actual amount if available
+                        status: 'success'
+                    });
+                    await newClaim.save();
+                    console.log(`Claim SUCCESS: ${nextInQueue.phoneNumber}`);
+                } else {
+                    // Handle failure
+                    console.log(`Claim Failed: ${nextInQueue.phoneNumber}, Status: ${tw.status.code}`);
+                    nextInQueue.status = 'failed';
+                    nextInQueue.failureReason = tw.status.code; // Save the error code
+                    await nextInQueue.save();
+                }
 
             } catch (err) {
                 console.error(`Claim FAILED: ${nextInQueue.phoneNumber}`, err.message);
                 nextInQueue.status = 'failed';
+                nextInQueue.failureReason = err.message;
                 await nextInQueue.save();
             }
         }

@@ -95,7 +95,7 @@ router.post('/join-queue', async (req, res) => {
         // 1. Check if already claimed for this event
         const existingClaim = await Claim.findOne({ phoneNumber, eventCode });
         if (existingClaim) {
-            return res.status(400).json({ success: false, message: 'Phone number already claimed for this event' });
+            return res.status(400).json({ success: false, message: 'คุณเคยรับซองนี้แล้ว' });
         }
 
         // 2. Check if already in queue for this event
@@ -178,7 +178,8 @@ router.get('/queue-status/:eventCode/:phoneNumber', async (req, res) => {
                 queueNumber: queueEntry.queueNumber,
                 peopleAhead: 0,
                 estimatedWaitTime: 0,
-                canClaim: false
+                canClaim: false,
+                failureReason: queueEntry.failureReason // Return failure reason
             });
         }
 

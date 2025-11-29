@@ -23,6 +23,10 @@ const queueSchema = new mongoose.Schema({
         type: String,
         required: true,
         index: true
+    },
+    failureReason: {
+        type: String,
+        default: null
     }
 });
 

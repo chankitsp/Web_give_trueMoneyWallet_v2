@@ -203,11 +203,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 } else if (data.status === 'failed') {
                     clearInterval(queuePollInterval);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'รับรางวัลไม่สำเร็จ',
-                        text: 'เกิดข้อผิดพลาดในการโอนเงิน กรุณาลองใหม่'
-                    });
+
+                    if (data.failureReason === 'TARGET_USER_REDEEMED') {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'คุณเคยรับซองนี้แล้ว',
+                            text: 'เบอร์โทรศัพท์นี้ได้รับซองนี้ไปแล้ว ไม่สามารถรับซ้ำได้'
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'รับรางวัลไม่สำเร็จ',
+                            text: 'เกิดข้อผิดพลาดในการโอนเงิน กรุณาลองใหม่'
+                        });
+                    }
                 }
 
             } catch (err) {
