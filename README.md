@@ -65,7 +65,7 @@
 ## เครื่องมือช่วยเหลือ (Utility Scripts)
 
 *   `node clear_all.js`: ล้างข้อมูลคิวและประวัติการรับรางวัลทั้งหมด (ใช้ระวัง!)
-*   `node verify_multi_event.js`: สคริปต์ทดสอบระบบ Multi-Event แบบอัตโนมัติ
+
 
 ---
 Developed by MacEZ
