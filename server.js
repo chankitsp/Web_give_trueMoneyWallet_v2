@@ -56,16 +56,15 @@ const Event = require('./models/Event');
 
 
 
-let isProcessing = false;
+const processingEvents = new Set();
 
-const processQueue = async () => {
-    if (isProcessing) return;
-    isProcessing = true;
+const processEvent = async (eventCode) => {
+    if (processingEvents.has(eventCode)) return;
+    processingEvents.add(eventCode);
 
     try {
-        // 1. Find next in line (Global FIFO, but respecting event boundaries)
-        // We can just pick the oldest 'waiting' item regardless of event
-        const nextInQueue = await Queue.findOne({ status: 'waiting' }).sort({ joinedAt: 1 });
+        // Find next in line for THIS event
+        const nextInQueue = await Queue.findOne({ eventCode, status: 'waiting' }).sort({ queueNumber: 1 });
 
         if (nextInQueue) {
             console.log(`Processing queue: ${nextInQueue.phoneNumber} for event ${nextInQueue.eventCode}`);
@@ -97,13 +96,21 @@ const processQueue = async () => {
                     await nextInQueue.save();
 
                     // Create Claim Record
-                    const newClaim = new Claim({
-                        phoneNumber: nextInQueue.phoneNumber,
-                        eventCode: nextInQueue.eventCode,
-                        amount: tw.data.my_ticket.amount_baht || 0, // Use actual amount if available
-                        status: 'success'
-                    });
-                    await newClaim.save();
+                    try {
+                        const newClaim = new Claim({
+                            phoneNumber: nextInQueue.phoneNumber,
+                            eventCode: nextInQueue.eventCode,
+                            amount: tw.data.my_ticket.amount_baht || 0, // Use actual amount if available
+                            status: 'success'
+                        });
+                        await newClaim.save();
+                    } catch (saveErr) {
+                        if (saveErr.code === 11000) {
+                            console.log(`Claim record already exists for ${nextInQueue.phoneNumber} (treated as success)`);
+                        } else {
+                            console.error('Error saving claim record:', saveErr);
+                        }
+                    }
                     console.log(`Claim SUCCESS: ${nextInQueue.phoneNumber}`);
                 } else {
                     // Handle failure
@@ -121,14 +128,27 @@ const processQueue = async () => {
             }
         }
     } catch (err) {
-        console.error('Queue Processor Error:', err);
+        console.error(`Queue Processor Error for ${eventCode}:`, err);
     } finally {
-        isProcessing = false;
+        processingEvents.delete(eventCode);
+    }
+};
+
+const processQueues = async () => {
+    try {
+        // Find all events that have waiting items
+        const activeEvents = await Queue.distinct('eventCode', { status: 'waiting' });
+
+        for (const eventCode of activeEvents) {
+            processEvent(eventCode);
+        }
+    } catch (err) {
+        console.error('Error finding active queues:', err);
     }
 };
 
 // Run queue processor every 1 second
-setInterval(processQueue, 1000);
+setInterval(processQueues, 1000);
 // ----------------------------------
 
 app.listen(PORT, () => {

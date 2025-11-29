@@ -210,11 +210,17 @@ document.addEventListener('DOMContentLoaded', () => {
                             title: 'คุณเคยรับซองนี้แล้ว',
                             text: 'เบอร์โทรศัพท์นี้ได้รับซองนี้ไปแล้ว ไม่สามารถรับซ้ำได้'
                         });
-                    } else {
+                    } else if (data.failureReason === 'TARGET_USER_NOT_FOUND') {
                         Swal.fire({
                             icon: 'error',
+                            title: 'ไม่พบเบอร์ทรูมันนี่',
+                            text: 'กรุณาตรวจสอบเบอร์โทรศัพท์อีกครั้ง'
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'warning',
                             title: 'รับรางวัลไม่สำเร็จ',
-                            text: 'เกิดข้อผิดพลาดในการโอนเงิน กรุณาลองใหม่'
+                            text: 'กรุณาติดต่อแอดมิน'
                         });
                     }
                 }
@@ -250,7 +256,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 li.innerHTML = `
-                    <span>คิวที่ ${item.queueNumber} (${item.phoneNumber})</span>
+                    <span>${item.phoneNumber}</span>
                     <span class="status-badge ${statusClass}">${statusText}</span>
                 `;
                 list.appendChild(li);
