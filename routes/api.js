@@ -9,7 +9,7 @@ const Counter = require('../models/Counter');
 // --- Admin Routes ---
 
 // Create New Event
-router.post('/admin/create-event', async (req, res) => {
+router.post('/createtw/create-event', async (req, res) => {
     const { startTime, endTime, rewardCode, trueMoneyUrl } = req.body;
     try {
         // Generate random 8-char code
