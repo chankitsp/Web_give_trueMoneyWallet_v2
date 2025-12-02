@@ -7,6 +7,7 @@ const path = require('path');
 const apiRoutes = require('./routes/api');
 const twApi = require('@opecgame/twapi');
 const checkIp = require('./middleware/checkIp');
+const ShortLink = require('./models/ShortLink');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -42,9 +43,19 @@ app.get('/createtw', checkIp, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
+// Serve Admin URL Page
+app.get('/createtwurl', checkIp, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin_url.html'));
+});
+
 // Serve Event Page
 app.get('/event/:code', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Serve Event URL Page
+app.get('/eventurl/:code', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index_url.html'));
 });
 
 // Routes
@@ -151,6 +162,24 @@ const processQueues = async () => {
 // Run queue processor every 1 second
 setInterval(processQueues, 1000);
 // ----------------------------------
+
+// Short Link Redirect
+app.get('/:shortCode', async (req, res, next) => {
+    const { shortCode } = req.params;
+    if (shortCode.length !== 5) return next();
+
+    try {
+        const link = await ShortLink.findOne({ code: shortCode });
+        if (link) {
+            res.redirect(link.originalUrl);
+        } else {
+            next();
+        }
+    } catch (err) {
+        console.error('ShortLink Error:', err);
+        next();
+    }
+});
 
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);

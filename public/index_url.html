@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MacEZ Free Money - รับรางวัล</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body>
+
+    <div class="container">
+        <header>
+            <h1>MacEZ Free Money</h1>
+            <p>แจกซองทรูมันนี่วอเล็ทฟรี!</p>
+        </header>
+
+        <div id="countdown-container" class="card">
+            <h2>เวลานับถอยหลัง</h2>
+            <div id="countdown" class="countdown-timer">00:00:00</div>
+            <p id="status-text">กำลังโหลด...</p>
+        </div>
+
+        <div id="claim-form-container" class="card hidden">
+            <h2>รับรางวัล</h2>
+            <form id="claim-form">
+                <div class="form-group">
+                    <label for="code">รหัสรับรางวัล</label>
+                    <input type="text" id="code" name="code" placeholder="กรอกรหัสรับรางวัล" required>
+                </div>
+                <button type="submit" class="btn-primary">รับรางวัล</button>
+            </form>
+            <div id="result-container" class="hidden"
+                style="margin-top: 20px; text-align: center; background-color: #222; padding: 20px; border-radius: 10px; border: 1px solid #333;">
+                <p style="color: #aaa; margin-bottom: 10px; font-size: 0.9em;">True Money Wallet Voucher:</p>
+                <a id="reward-link" href="#" target="_blank"
+                    style="font-size: 1.4em; color: #ff9800; text-decoration: none; word-break: break-all; font-weight: bold;"></a>
+            </div>
+        </div>
+
+        <footer>
+            <p>&copy; 2025 MacEZ Free Money. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script src="/script_url.js"></script>
+</body>
+
+</html>

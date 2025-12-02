@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const Event = require('../models/Event');
+const EventUrl = require('../models/EventUrl');
+const ShortLink = require('../models/ShortLink');
 const Claim = require('../models/Claim');
 const Queue = require('../models/Queue');
 const Counter = require('../models/Counter');
@@ -31,6 +33,36 @@ router.post('/createtw/create-event', checkIp, async (req, res) => {
     }
 });
 
+// Create New URL Event
+router.post('/createtwurl/create-event', checkIp, async (req, res) => {
+    const { startTime, endTime, rewardCode, rewardUrl } = req.body;
+    try {
+        // Generate Short Link
+        const shortCode = Math.random().toString(36).substring(2, 7); // 5 chars
+        const shortLink = new ShortLink({
+            code: shortCode,
+            originalUrl: rewardUrl
+        });
+        await shortLink.save();
+
+        const domain = req.protocol + '://' + req.get('host');
+        const shortenedUrl = `${domain}/${shortCode}`;
+
+        const code = Math.random().toString(36).substring(2, 10);
+        const newEvent = new EventUrl({
+            code,
+            startTime: new Date(startTime),
+            endTime: new Date(endTime),
+            rewardCode,
+            rewardUrl: shortenedUrl // Save shortened URL
+        });
+        await newEvent.save();
+        res.json({ success: true, eventCode: code, link: `/eventurl/${code}` });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // --- Public Event Routes ---
 
 // Get Event Config
@@ -38,6 +70,20 @@ router.get('/event-config/:code', async (req, res) => {
     const { code } = req.params;
     try {
         const event = await Event.findOne({ code });
+        if (!event) {
+            return res.status(404).json({ error: 'Event not found' });
+        }
+        res.json(event);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Get Event URL Config
+router.get('/eventurl-config/:code', async (req, res) => {
+    const { code } = req.params;
+    try {
+        const event = await EventUrl.findOne({ code });
         if (!event) {
             return res.status(404).json({ error: 'Event not found' });
         }
@@ -56,6 +102,24 @@ router.post('/check-code', async (req, res) => {
             res.json({ valid: true });
         } else {
             res.json({ valid: false });
+        }
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Check Reward Code for URL Event
+router.post('/check-code-url', async (req, res) => {
+    const { code, eventCode } = req.body;
+    try {
+        const event = await EventUrl.findOne({ code: eventCode });
+        if (!event) {
+            return res.status(404).json({ success: false, message: 'Event not found' });
+        }
+        if (event.rewardCode === code) {
+            res.json({ success: true, rewardUrl: event.rewardUrl });
+        } else {
+            res.json({ success: false, message: 'Invalid code' });
         }
     } catch (err) {
         res.status(500).json({ error: err.message });
