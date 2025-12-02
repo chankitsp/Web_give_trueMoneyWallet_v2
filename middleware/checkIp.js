@@ -1,4 +1,9 @@
 const checkIp = (req, res, next) => {
+    // Check if IP checking is enabled
+    if (process.env.ADMIN_CHECK_IP !== 'true') {
+        return next();
+    }
+
     const allowedIps = (process.env.ADMIN_IPS || '').split(',').map(ip => ip.trim());
     const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
 

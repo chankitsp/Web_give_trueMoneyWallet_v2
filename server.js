@@ -6,6 +6,7 @@ const cors = require('cors');
 const path = require('path');
 const apiRoutes = require('./routes/api');
 const twApi = require('@opecgame/twapi');
+const checkIp = require('./middleware/checkIp');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -37,7 +38,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 
 // Serve Admin Page
-app.get('/createtw', (req, res) => {
+app.get('/createtw', checkIp, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
